@@ -24,3 +24,17 @@ export const saveSession = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
+export const getUserSessions = async (req, res) => {
+  try {
+    const sessions = await Session.find({ user: req.user._id }).sort({
+      createdAt: -1,
+    });
+
+    res.json(sessions);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
