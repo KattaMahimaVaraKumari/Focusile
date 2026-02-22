@@ -38,3 +38,43 @@ export const getUserSessions = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
+export const getWeeklyReport = async (req, res) => {
+  try {
+    const sessions = await Session.find({ user: req.user._id });
+
+    if (!sessions.length) {
+      return res.json({ message: "No sessions found" });
+    }
+
+    const lastWeek = sessions.filter((s) => {
+      const diff =
+        (new Date() - new Date(s.createdAt)) / (1000 * 60 * 60 * 24);
+      return diff <= 7;
+    });
+
+    const avgFocus =
+      lastWeek.reduce((acc, s) => acc + s.focusScore, 0) /
+      lastWeek.length;
+
+    let suggestion = "Great work! Keep focusing.";
+
+    if (avgFocus < 40) {
+      suggestion =
+        "Your focus is low. Try reducing distractions and tab switching.";
+    } else if (avgFocus < 70) {
+      suggestion =
+        "Good focus. Try deep work sessions and Pomodoro technique.";
+    }
+
+    res.json({
+      totalSessions: lastWeek.length,
+      avgFocus: Math.round(avgFocus),
+      suggestion,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
