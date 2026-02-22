@@ -78,3 +78,22 @@ export const getWeeklyReport = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
+export const getFocusTrend = async (req, res) => {
+  try {
+    const sessions = await Session.find({ user: req.user._id }).sort({
+      createdAt: 1,
+    });
+
+    const data = sessions.map((s) => ({
+      date: s.createdAt.toISOString().split("T")[0],
+      focusScore: s.focusScore,
+    }));
+
+    res.json(data);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
