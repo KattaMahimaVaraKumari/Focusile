@@ -97,3 +97,30 @@ export const getFocusTrend = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
+export const getDailyFocusTrend = async (req, res) => {
+  try {
+    const sessions = await Session.find({ user: req.user._id });
+
+    const grouped = {};
+
+    sessions.forEach((s) => {
+      const date = s.createdAt.toISOString().split("T")[0];
+      if (!grouped[date]) grouped[date] = [];
+      grouped[date].push(s.focusScore);
+    });
+
+    const data = Object.keys(grouped).map((date) => ({
+      date,
+      avgFocus: Math.round(
+        grouped[date].reduce((a, b) => a + b, 0) / grouped[date].length
+      ),
+    }));
+
+    res.json(data);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
