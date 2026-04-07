@@ -132,3 +132,62 @@ export const getDailyFocusTrend = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const getStreak = async (req, res) => {
+  try {
+    const sessions = await Session.find({ user: req.user._id }).sort({
+      createdAt: 1,
+    });
+
+    if (!sessions.length) {
+      return res.json({ currentStreak: 0, longestStreak: 0 });
+    }
+
+    // Unique sorted dates
+    const uniqueDates = [
+      ...new Set(
+        sessions.map((s) =>
+          new Date(s.createdAt).toISOString().split("T")[0]
+        )
+      ),
+    ];
+
+    let longestStreak = 1;
+    let tempStreak = 1;
+
+    for (let i = 1; i < uniqueDates.length; i++) {
+      const prev = new Date(uniqueDates[i - 1]);
+      const curr = new Date(uniqueDates[i]);
+
+      const diff = (curr - prev) / (1000 * 60 * 60 * 24);
+
+      if (diff === 1) {
+        tempStreak++;
+        longestStreak = Math.max(longestStreak, tempStreak);
+      } else {
+        tempStreak = 1;
+      }
+    }
+
+    // Calculate current streak
+    let currentStreak = 0;
+    const today = new Date().toISOString().split("T")[0];
+
+    for (let i = uniqueDates.length - 1; i >= 0; i--) {
+      const date = uniqueDates[i];
+      const diff =
+        (new Date(today) - new Date(date)) / (1000 * 60 * 60 * 24);
+
+      if (diff === currentStreak) {
+        currentStreak++;
+      } else {
+        break;
+      }
+    }
+
+    res.json({ currentStreak, longestStreak });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

@@ -7,7 +7,7 @@ import {
   getFocusTrend,
   getDailyFocusTrend,
 } from "../controllers/sessionController.js";
-
+import { getStreak } from "../controllers/sessionController.js";
 import { body } from "express-validator";
 
 const router = express.Router();
@@ -47,5 +47,6 @@ router.get("/my-sessions", protect, getUserSessions);
 router.get("/weekly-report", protect, getWeeklyReport);
 router.get("/focus-trend", protect, getFocusTrend);
 router.get("/daily-focus-trend", protect, getDailyFocusTrend);
+router.get("/streak", protect, getStreak);
 
 export default router;
