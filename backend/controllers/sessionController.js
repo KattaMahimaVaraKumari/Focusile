@@ -1,7 +1,13 @@
 import Session from "../models/Session.js";
+import { validationResult } from "express-validator";
 
 export const saveSession = async (req, res) => {
+  
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
     const { activeTime, idleTime, tabSwitches, sessionDuration } = req.body;
 
     const focusScore =
@@ -55,8 +61,10 @@ export const getWeeklyReport = async (req, res) => {
     });
 
     const avgFocus =
-      lastWeek.reduce((acc, s) => acc + s.focusScore, 0) /
-      lastWeek.length;
+      lastWeek.length > 0
+        ? lastWeek.reduce((acc, s) => acc + s.focusScore, 0) /
+        lastWeek.length
+        : 0;
 
     let suggestion = "Great work! Keep focusing.";
 
